@@ -109,9 +109,6 @@ plugins:
   - git-revision-date-localized:
       enable_creation_date: true
   - git-authors
-  - git-committers:
-      repository: hsandmann/hsandmann.github.com
-      branch: main
   - search
   - badges
   - minify:
@@ -138,3 +135,4 @@ nav:
     - Exercício 2 - Perceptron: ./exercicio2/main.md
   - Projetos: 
     - Projeto 1: ./projeto1/main.md
+    - Projeto 2: ./projeto2/main.md

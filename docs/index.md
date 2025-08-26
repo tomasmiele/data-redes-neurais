@@ -6,7 +6,10 @@
 
 ## Entregas
 
+### Exercícios:
 - [ ] Exercício 1 - Data 05/09/2025
 - [ ] Exercício 2 - Data 12/09/2025
+
+### Projetos:
 - [ ] Projeto 1 - Data 21/09/2025
 - [ ] Projeto 2 - Data 19/10/2025
