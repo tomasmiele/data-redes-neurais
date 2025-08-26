@@ -1,13 +1,5 @@
-## Objetivo
-
-Essa atividade foi elaborada para testar suas habilidades em gerar conjuntos de dados sintéticos, lidar com desafios de dados do mundo real e preparar dados para serem alimentados em redes neurais.
-
-## Exercício 1
-
-### Generate the Data
-
-``` 
 import numpy as np
+import matplotlib.pyplot as plt
 
 SEED = 42
 N_CLASSES = 4
@@ -38,16 +30,6 @@ def generate_data(means: np.ndarray, stds: np.ndarray, n_per_class: int, seed: i
     y = np.concatenate(y_list)
     return X, y
 
-X, y = generate_data(means, stds, n_per_class=N_PER_CLASS, seed=SEED)
-
-print(X, y)
-```
-
-### Plot the Data
-
-```
-import matplotlib.pyplot as plt
-
 def plot_scatter_with_linear_cuts(X: np.ndarray, y: np.ndarray, means: np.ndarray, save_path: str | None = None):
     plt.figure(figsize=(8, 5))
     for c in np.unique(y):
@@ -71,29 +53,10 @@ def plot_scatter_with_linear_cuts(X: np.ndarray, y: np.ndarray, means: np.ndarra
         plt.savefig(save_path, dpi=200, bbox_inches="tight")
     plt.show()
 
-plot_scatter_with_linear_cuts(X, y, means, save_path=None)
-```
-![Output do código](./data.png)
+def main():
+    X, y = generate_data(means, stds, n_per_class=N_PER_CLASS, seed=SEED)
 
-### Analyse and Draw Boundaries
+    plot_scatter_with_linear_cuts(X, y, means, save_path=None)
 
-**(a) Distribuição e sobreposição**
-
-- **Classe 0 (μ ≈ [2,3])**: mais alongada no eixo *y* (σy = 2.5), formando uma “coluna” vertical à esquerda.  
-- **Classe 1 (μ ≈ [5,6])**: variância moderada, localizada acima da Classe 2 em *y*, separada da Classe 0 em *x*.  
-- **Classe 2 (μ ≈ [8,1])**: mais compacta e abaixo da Classe 1 em *y*.  
-- **Classe 3 (μ ≈ [15,4])**: bem à direita, com σy = 2.0, praticamente sem mistura com as demais.  
-
-**(b) Uma fronteira linear simples separa todas as classes?**
-
-Sim. Um **conjunto de fronteiras lineares (retas verticais)** é suficiente para separar bem as quatro classes, pois os clusters estão ordenados principalmente ao longo do eixo *x*.  
-
-![Data com barreiras](./data-with-boundaries.png)
-
-**(c) Fronteiras sugeridas**
-
-As fronteiras de decisão podem ser esboçadas como linhas verticais em:  
-
-- **x ≈ 3.5** (entre Classe 0 e Classe 1)  
-- **x ≈ 6.5** (entre Classe 1 e Classe 2)  
-- **x ≈ 11.5** (entre Classe 2 e Classe 3)
+if __name__ == "__main__":
+    main()
