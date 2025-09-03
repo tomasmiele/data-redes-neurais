@@ -178,3 +178,186 @@ plt.show()
 
 - Redes neurais com ativações não lineares (ReLU, tanh, sigmoid) podem aprender **fronteiras curvas** adaptando-se às orientações internas dos clusters.  
 - Assim, conseguem classificar melhor quando os dados não são linearmente separáveis.
+
+## Exercício 3
+
+### Describe the Data
+
+Objective:
+- O Spaceship Titanic é um dataset de classificação binária. Coluna alvo (Transported) indica se o passageiro foi transportado para outra dimensão após o acidente da Spaceship Titanic.
+    - True: passageiro transportado
+    - False: passageiro não transportado
+- O objetivo é prever Transported a partir dos dados dos passageiros.
+
+Features:
+- PassengerId: ID único de cada passageiro
+- HomePlanet: planeta de origem do passageiro (categórica)
+- CryoSleep: se o passageiro estava em sono criogênico (categórica)
+- Cabin: número da cabine (categórica)
+- Destination: destino da viagem (categórica)
+- VIP: se o passageiro era VIP (categórica)
+- Age: idade do passageiro (numérica)
+- RoomService: gasto em serviço de quarto (numérica)
+- FoodCourt: gasto no restaurante Food Court (numérica)
+- ShoppingMall: gasto em compras (numérica)
+- Spa: gasto em spa (numérica)
+- VRDeck: gasto em simulador VR (numérica)
+- Transported → variável alvo (target)
+
+Missing Data:
+```
+import pandas as pd
+
+df = pd.read_csv("docs/exercicio1/spaceship-titanic/train.csv")
+
+missing_counts = df.isnull().sum()
+missing = missing_counts[missing_counts > 0].sort_values(ascending=False)
+
+print(f"Colunas com valores faltantes:\n{missing}")
+```
+Resultado:
+
+Colunas com valores faltantes:
+CryoSleep       217
+ShoppingMall    208
+VIP             203
+HomePlanet      201
+Name            200
+Cabin           199
+VRDeck          188
+FoodCourt       183
+Spa             183
+Destination     182
+RoomService     181
+Age             179
+
+### Proccess the Data
+```
+import pandas as pd
+import numpy as np
+
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
+from sklearn.impute import SimpleImputer
+
+def split_passenger_id(s):
+    try:
+        g, n = s.split("_")
+        return int(g), int(n)
+    except Exception:
+        return np.nan, np.nan
+
+def split_cabin(s):
+    try:
+        deck, num, side = s.split("/")
+        num = pd.to_numeric(num, errors="coerce")
+        return deck, num, side
+    except Exception:
+        return np.nan, np.nan, np.nan
+
+df = pd.read_csv("docs/exercicio1/spaceship-titanic/train.csv")
+
+df[["GroupId", "PassengerNum"]] = df["PassengerId"].apply(lambda s: pd.Series(split_passenger_id(s)))
+df[["Deck", "CabinNum", "Side"]] = df["Cabin"].apply(lambda s: pd.Series(split_cabin(s)))
+
+drop_cols = ["PassengerId", "Name", "Cabin"]
+for c in drop_cols:
+    if c in df.columns:
+        df.drop(columns=c, inplace=True)
+
+target_col = "Transported"
+num_cols = [
+    "Age", "RoomService", "FoodCourt", "ShoppingMall", "Spa", "VRDeck",
+    "PassengerNum", "GroupId", "CabinNum"
+]
+cat_cols = [
+    "HomePlanet", "CryoSleep", "Destination", "VIP", "Deck", "Side"
+]
+
+numeric_imputer = SimpleImputer(strategy="median")
+categorical_imputer = SimpleImputer(strategy="most_frequent")
+
+scaler = MinMaxScaler(feature_range=(-1, 1))
+ohe = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+
+numeric_pipeline = Pipeline(steps=[
+    ("imputer", numeric_imputer),
+    ("scaler", scaler),
+])
+
+categorical_pipeline = Pipeline(steps=[
+    ("imputer", categorical_imputer),
+    ("onehot", ohe),
+])
+
+pre = ColumnTransformer(
+    transformers=[
+        ("num", numeric_pipeline, num_cols),
+        ("cat", categorical_pipeline, cat_cols),
+    ],
+    remainder="drop"
+)
+
+X = df.drop(columns=[target_col]) if target_col in df.columns else df.copy()
+y = None
+if target_col in df.columns:
+    y = df[target_col].astype("int64")
+
+X_proc = pre.fit_transform(X)
+
+num_names = num_cols
+cat_names = []
+if len(cat_cols) > 0:
+    ohe_feat_names = pre.named_transformers_["cat"].named_steps["onehot"].get_feature_names_out(cat_cols)
+    cat_names = ohe_feat_names.tolist()
+feature_names = num_names + cat_names
+
+X_proc_df = pd.DataFrame(X_proc, columns=feature_names, index=X.index)
+if y is not None:
+    X_proc_df[target_col] = y.values
+
+X_proc_df.to_csv("docs/exercicio1/spaceship-titanic/train_preprocessed.csv", index=False)
+```
+
+### FoodCourt & HomePlanet Histograms
+```
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+df["FoodCourt"].hist(ax=axes[0], bins=30, color="skyblue", edgecolor="black")
+axes[0].set_title("FoodCourt (antes do scaling)")
+axes[0].set_xlabel("Valor original")
+axes[0].set_ylabel("Frequência")
+
+foodcourt_idx = feature_names.index("FoodCourt")
+pd.Series(X_proc[:, foodcourt_idx]).hist(ax=axes[1], bins=30, color="lightgreen", edgecolor="black")
+axes[1].set_title("FoodCourt (após MinMaxScaler [-1,1])")
+axes[1].set_xlabel("Valor escalado")
+axes[1].set_ylabel("Frequência")
+
+plt.tight_layout()
+plt.show()
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+df["HomePlanet"].value_counts().plot(kind="bar", ax=axes[0], color="coral", edgecolor="black")
+axes[0].set_title("HomePlanet (antes do One-Hot)")
+axes[0].set_xlabel("Planeta")
+axes[0].set_ylabel("Contagem")
+
+homeplanet_cols = [c for c in feature_names if c.startswith("HomePlanet_")]
+pd.DataFrame(X_proc, columns=feature_names)[homeplanet_cols].sum().plot(kind="bar", ax=axes[1], color="lightseagreen", edgecolor="black")
+axes[1].set_title("HomePlanet (após One-Hot Encoding)")
+axes[1].set_xlabel("Colunas geradas")
+axes[1].set_ylabel("Contagem de 1s")
+
+plt.tight_layout()
+plt.show()
+```
+
+![FoodCourt](./FoodCourt.png)
+![HomePlanet](./HomeCountry.png)
+
+Escolhi mostrar o HomePlanet justamente porque o One-Hot não altera a distribuição original, apenas muda a representação. Isso mostra que em algumas variáveis o pré-processamento não traz diferença prática.
