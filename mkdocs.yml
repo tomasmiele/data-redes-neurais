@@ -2,6 +2,7 @@ site_author: "Tomas M."
 site_name: Data Redes Neurais
 site_url: https://tomasmiele.github.io/data-redes-neurais/
 repo_url: https://github.com/tomasmiele/data-redes-neurais
+use_directory_urls: true
 repo_name: tomasmiele/data-redes-neurais
 
 theme:
