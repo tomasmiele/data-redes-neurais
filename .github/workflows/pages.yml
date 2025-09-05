@@ -2,7 +2,7 @@ name: Deploy MkDocs
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]   # muda se sua branch principal não for "main"
   workflow_dispatch:
 
 permissions:
@@ -19,17 +19,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install MkDocs
-        run: pip install mkdocs mkdocs-material mkdocs-minify-plugin
+
+      - name: Install MkDocs + Plugins
+        run: |
+          pip install --upgrade pip
+          pip install mkdocs mkdocs-material mkdocs-minify-plugin
+
       - name: Build site
-        run: mkdocs build --clean          # gera a pasta "site"
+        run: mkdocs build --clean   # gera a pasta "site"
+
+      - name: Verify built site (debug)
+        run: |
+          echo "Conteúdo da pasta site/"
+          ls -R site | head -n 40
+
       - uses: actions/configure-pages@v5
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: 'site'                      # publica exatamente o que o mkdocs gerou
+          path: 'site'
 
   deploy:
     runs-on: ubuntu-latest
