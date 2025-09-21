@@ -9,6 +9,7 @@
 ### Exercícios:
 - [x] Exercício 1 - Data 05/09/2025
 - [x] Exercício 2 - Data 12/09/2025
+- [x] Exercício 3 - Data 21/09/2025
 
 ### Projetos:
 - [ ] Projeto 1 - Data 21/09/2025
