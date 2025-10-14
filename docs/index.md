@@ -13,4 +13,4 @@
 
 ### Projetos:
 - [X] Projeto 1 - Data 05/10/2025
-- [ ] Projeto 2 - Data 19/10/2025
+- [X] Projeto 2 - Data 19/10/2025
