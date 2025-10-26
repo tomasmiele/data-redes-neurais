@@ -10,7 +10,7 @@
 - [x] Exercício 1 - Data 05/09/2025
 - [x] Exercício 2 - Data 12/09/2025
 - [x] Exercício 3 - Data 21/09/2025
-- [] Exercício 4 - Data 26/10/2025
+- [X] Exercício 4 - Data 26/10/2025
 
 ### Projetos:
 - [X] Projeto 1 - Data 05/10/2025
